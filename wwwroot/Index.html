@@ -1,0 +1,367 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>view</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+
+    <div class="container">
+
+        <h1>view</h1>
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <form action="javascript:void(0);" method="POST" onsubmit="addItem()">
+
+                    <div class="mb-3">
+
+                        <label for="firstname_add" class="form-label">First Name</label>
+
+                        <input type="text" name="name"
+                               id="firstname_add" class="form-control" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label for="lastname_add" class="form-label">Last Name</label>
+
+                        <input type="text" name="email" id="lastname_add" class="form-control" />
+
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="dob_add" class="form-label">
+                            Date
+                            of Birth
+                        </label>
+
+                        <input type="datetime-local" name="dob" id="dob_add"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label for="category_add" class="form-label">Category</label>
+
+                        <input type="text" name="mainCategory" id="category_add" class="form-control" />
+                    </div>
+
+                    <input type="submit" value="Add" class="btn btn-primary">
+                </form>
+
+                <hr />
+
+                <div id="spoiler">
+
+                    <h3>Edit</h3>
+
+                    <form class="my-form">
+
+                        <div class="mb-3">
+
+                            <label for="firstname_edit" class="form-label">
+                                First
+                                Name
+                            </label>
+
+                            <input type="text" name="name" id="firstname_edit"
+                                   class="form-control" />
+
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="lastname_edit" class="form-label">Last Name</label>
+
+                            <input type="text"
+                                   name="email" id="lastname_edit" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dob_edit" class="form-label">
+                                Date of
+                                Birth
+                            </label>
+
+                            <input type="datetime-local" name="dob" id="dob_edit"
+                                   class="form-control" />
+
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="category_edit" class="form-label">Category</label>
+
+                            <input type="text"
+                                   name="mainCategory" id="category_edit" class="form-control" />
+
+                        </div>
+
+                        <input type="button" id="btnUpdate" value="Edit" class="btn btn-primary">
+
+                        <input type="hidden" id="id_edit" />
+
+                    </form>
+
+                </div>
+
+                <p id="counter"></p>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <table id="tblAuthor" class="table table-bordered table-striped table-hover">
+
+                    <thead>
+
+                        <tr class="text-center">
+
+                            <td>Id</td>
+
+                            <td>Name</td>
+
+                            <td>Age</td>
+
+                            <td>Main Category</td>
+
+                            <td></td>
+
+                            <td></td>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script src="jquery/jquery.min.js"></script>
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        var uri = "https://localhost:6001/api/v1/author";
+
+        let todos = null;
+
+        $(function () {
+
+            getData();
+
+            $("#spoiler").hide();
+
+        })
+
+        function addItem() {
+
+            const item = {
+
+                firstname: $("#firstname_add").val(),
+
+                lastname: $("#lastname_add").val(),
+
+                dateOfBirth: $("#dob_add").val(),
+
+                mainCategory: $("#category_add").val(),
+
+            };
+
+            $.ajax({
+                type: "POST",
+                url: uri,
+                data: JSON.stringify(item),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+
+
+                error: function (jqXHR, textStatus, errorThrown) {
+
+                    alert("Error!");
+                },
+
+                success: function (result) {
+
+                    getData();
+
+                    $("#firstname_add").val("");
+
+                    $("#lastname_add").val("");
+
+                    $("#dob_add").val("");
+
+                    $("#category_add").val("");
+
+                }
+
+            });
+
+        }
+
+        function deleteItem(id) {
+
+            $.ajax({
+                type: "DELETE",
+                url: uri + "/" + id,
+                
+                
+
+                success: function (result) {
+
+                    getData();
+
+                }
+
+            });
+
+        }
+
+        function editItem(id) {
+
+            $.each(todos, function (key, item) {
+
+                if (item.id === id) {
+
+                    $("#firstname_edit").val(item.firstName);
+
+                    $("#lastname_edit").val(item.lastName);
+
+                    $("#dob_edit").val(item.dateOfBirth.slice(0, 19));
+
+                    $("#category_edit").val(item.mainCategory);
+
+                    $("#id_edit").val(item.id);
+                }
+            });
+
+            $("#spoiler").css({ display: "block" });
+        }
+
+        $("#btnUpdate").on("click", function () {
+
+            const item = {
+
+                firstname: $("#firstname_edit").val(),
+
+                lastname: $("#lastname_edit").val(),
+
+                dateOfBirth: $("#dob_edit").val(),
+
+                mainCategory: $("#category_edit").val(),
+
+                id: $("#id_edit").val()
+
+            };
+
+            $.ajax({
+                type: "PUT",
+                url: uri + "/" + $("#id_edit").val(),
+                data: JSON.stringify(item),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+
+                success: function (result) {
+
+                    getData();
+
+                }
+
+            });
+
+            closeInput();
+            return false;
+        });
+
+        function closeInput() {
+
+            $("#spoiler").css({ display: "none" });
+        }
+
+        function getData() {
+            $.ajax({
+                type: "GET",
+                url: uri,
+                success: function (data) {
+
+                    const tBody = $("#tblAuthor tbody");
+
+                    $(tBody).empty();
+
+                    $.each(data, function (key, item) {
+
+                        const tr = $("<tr></tr>")
+
+                            .append($("<td class='text-center'></td>").text(item.id))
+
+                            .append($("<td></td>").text(item.name))
+
+                            .append($("<td class='text-center'></td>").text(item.age))
+
+                            .append($("<td></td>").text(item.mainCategory))
+
+                            .append(
+
+                                $("<td class='text-center'></td>").append(
+
+                                    $("<button class='btn btn-success btn-sm'>Edit</button>").on("click", function () {
+
+                                        editItem(item.id);
+                                    })
+                                )
+                            )
+
+                            .append(
+
+                                $("<td class='text-center'></td>").append(
+
+                                    $("<button class='btn btn-danger btn-sm'>Delete</button>").on("click", function () {
+
+                                        deleteItem(item.id);
+
+                                    })
+                                )
+                            );
+
+                        tr.appendTo(tBody);
+                    });
+
+                    todos = data;
+                },
+
+                error: function (xhr, status) {
+
+                    if (typeof this.statusCode[xhr.status] !=
+                        'undefined') {
+
+                        return false;
+
+                    }
+                },
+
+                statusCode: {
+
+                    404: function (response) {
+                        alert('ajax.statusCode: 404');
+                    },
+                    500:
+                        function (response) {
+                            alert('ajax.statusCode: 500');
+                        }
+                }
+            });
+        }
+    </script>
+
+
+</body>
+</html>
